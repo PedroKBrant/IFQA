@@ -50,7 +50,6 @@ def evaluate_img(img_path, model, csv_path):
     # Save data to CSV
     with open(csv_path, 'a', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(['Image', 'Score'])  # Write header row if needed
         writer.writerow([saved_name, score])
 
 def main(config):
