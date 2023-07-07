@@ -38,10 +38,10 @@ IFQA is designed for evaluating the realness of faces. IFQA produces score maps 
 You can produce quality scores using `test.py`. For example:
 ```.bash
 # A single face image input.
-python test.py --f_path=./docs/00021_Blurred.png
+python test.py --path=./docs/00021_Blurred.png
 
 # All images within a directory.
-python test.py --f_path=./docs
+python test.py --path=./docs
 ```
 
 ## Citation
