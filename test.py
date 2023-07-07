@@ -6,18 +6,21 @@ import cv2
 from albumentations.pytorch import ToTensorV2
 import numpy as np
 import argparse
+from tqdm import tqdm
 
 transform_input = A.Compose([
     A.Resize(256, 256, interpolation=cv2.INTER_LINEAR),
     A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
     ToTensorV2()
 ])
+
 def get_model():
     discriminator = Discriminator().cuda()
     model_file_path = "./weights/IFQA_Metric.pth"
     discriminator.load_state_dict(torch.load(model_file_path)['D'])
     discriminator.eval()
     return discriminator
+
 def denorm(x):
     out = (x + 1) / 2
     return out.clamp(0, 1)
@@ -41,8 +44,7 @@ def evaluate_img(img_path, model):
     c_map = cv2.applyColorMap(p_map, colormap=16)
     saved_name = img_path.split("/")[-1]
     cv2.imwrite("./results/{0}".format(saved_name), c_map)
-    print("File: {0} Score: {1}".format(saved_name, score))
-
+    #print("File: {0} Score: {1}".format(saved_name, score))
 
 def main(config):
     discriminator = get_model()
@@ -52,7 +54,7 @@ def main(config):
         evaluate_img(f_path, discriminator)
     else:
         files_list = os.walk(f_path).__next__()[2]
-        for file_name in files_list:
+        for file_name in tqdm(files_list):
             file_path = os.path.join(f_path, file_name)
             evaluate_img(file_path, discriminator)
     print("Done!")
