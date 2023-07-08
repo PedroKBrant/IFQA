@@ -45,7 +45,7 @@ def read_image(img_path):
     img = transform_input(image=img)['image'].unsqueeze(0).cuda()
     return img
 
-def evaluate_img(img_path, model, csv_path, save_data):
+def evaluate_img(img_path, model, save_data, timestamp):
     img = read_image(img_path)
     with torch.no_grad():
         p_map = model(img)
@@ -62,7 +62,6 @@ def evaluate_img(img_path, model, csv_path, save_data):
         img_np = np.clip((img_np * 0.5 + 0.5) * 255, 0, 255).astype(np.uint8)
         img_np = cv2.cvtColor(img_np, cv2.COLOR_BGR2RGB)
         img_map = merge_images(img_np, c_map)
-        timestamp = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M")
         result_folder = f"./results/{timestamp}/"
         os.makedirs(result_folder, exist_ok=True)
         cv2.imwrite("{0}{1}.png".format(result_folder, saved_name), img_map)
@@ -76,16 +75,17 @@ def main(config):
     csv_path = config.csv_path
     save_data = config.save_data
     images_score = []
+    timestamp = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M")
 
     print("Start assessment..")
     if os.path.isfile(f_path):
-        saved_name, score = evaluate_img(f_path, discriminator, csv_path, save_data)
+        saved_name, score = evaluate_img(f_path, discriminator, save_data, timestamp)
         images_score.append((saved_name, score))
     else:
         files_list = os.walk(f_path).__next__()[2]
         for file_name in tqdm(files_list):
             file_path = os.path.join(f_path, file_name)
-            saved_name, score = evaluate_img(file_path, discriminator, csv_path, save_data)
+            saved_name, score = evaluate_img(file_path, discriminator, save_data, timestamp)
             images_score.append((saved_name, score))
 
     print(f"Saving at {csv_path}")
