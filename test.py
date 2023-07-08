@@ -87,6 +87,14 @@ def main(config):
     print(f"Saving at {csv_path}")
     with open(csv_path, 'a', newline='') as csvfile:
         writer = csv.writer(csvfile)
+        scores = [score for _, score in images_score]  # Extract scores into a separate list
+
+        mean_score = np.mean(scores)
+        std_dev = np.std(scores)
+        writer.writerow(["Statistics"])
+        writer.writerow(["Mean", mean_score])
+        writer.writerow(["Standard Deviation", std_dev])
+
         writer.writerow(["Image", "Score"])
         for name, score in images_score:
             writer.writerow([name, score])
