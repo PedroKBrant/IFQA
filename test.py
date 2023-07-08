@@ -8,6 +8,7 @@ import numpy as np
 import argparse
 from tqdm import tqdm
 import csv
+import datetime
 
 transform_input = A.Compose([
     A.Resize(256, 256, interpolation=cv2.INTER_LINEAR),
@@ -61,7 +62,10 @@ def evaluate_img(img_path, model, csv_path, save_data):
         img_np = np.clip((img_np * 0.5 + 0.5) * 255, 0, 255).astype(np.uint8)
         img_np = cv2.cvtColor(img_np, cv2.COLOR_BGR2RGB)
         img_map = merge_images(img_np, c_map)
-        cv2.imwrite("./results/{0}.png".format(saved_name), img_map)
+        timestamp = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M")
+        result_folder = f"./results/{timestamp}/"
+        os.makedirs(result_folder, exist_ok=True)
+        cv2.imwrite("{0}{1}.png".format(result_folder, saved_name), img_map)
     else:
         print("File: {0} Score: {1}".format(saved_name, score))
     return saved_name, score
