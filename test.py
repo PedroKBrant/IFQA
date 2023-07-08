@@ -64,26 +64,33 @@ def evaluate_img(img_path, model, csv_path, save_data):
         cv2.imwrite("./results/{0}.png".format(saved_name), img_map)
     else:
         print("File: {0} Score: {1}".format(saved_name, score))
-
-    # Save data to CSV
-    with open(csv_path, 'a', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow([saved_name, score])
+    return saved_name, score
 
 def main(config):
     discriminator = get_model()
     f_path = config.f_path
     csv_path = config.csv_path
     save_data = config.save_data
+    images_score = []
 
     print("Start assessment..")
     if os.path.isfile(f_path):
-        evaluate_img(f_path, discriminator, csv_path, save_data)
+        saved_name, score = evaluate_img(f_path, discriminator, csv_path, save_data)
+        names.append(saved_name)
+        scores.append(score)
     else:
         files_list = os.walk(f_path).__next__()[2]
         for file_name in tqdm(files_list):
             file_path = os.path.join(f_path, file_name)
-            evaluate_img(file_path, discriminator, csv_path, save_data)
+            saved_name, score = evaluate_img(file_path, discriminator, csv_path, save_data)
+            images_score.append((saved_name, score))
+
+    print(f"Saving at {csv_path}")
+    with open(csv_path, 'a', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(["Image", "Score"])
+        for name, score in images_score:
+            writer.writerow([name, score])
     print("Done!")
 
 if __name__ == "__main__":
