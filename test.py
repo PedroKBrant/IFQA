@@ -76,8 +76,7 @@ def main(config):
     print("Start assessment..")
     if os.path.isfile(f_path):
         saved_name, score = evaluate_img(f_path, discriminator, csv_path, save_data)
-        names.append(saved_name)
-        scores.append(score)
+        images_score.append((saved_name, score))
     else:
         files_list = os.walk(f_path).__next__()[2]
         for file_name in tqdm(files_list):
