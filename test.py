@@ -44,7 +44,7 @@ def read_image(img_path):
     img = transform_input(image=img)['image'].unsqueeze(0).cuda()
     return img
 
-def evaluate_img(img_path, model, csv_path):
+def evaluate_img(img_path, model, csv_path, save_data):
     img = read_image(img_path)
     with torch.no_grad():
         p_map = model(img)
@@ -56,13 +56,14 @@ def evaluate_img(img_path, model, csv_path):
     p_map = p_map.astype(np.uint8)
     c_map = cv2.applyColorMap(p_map, colormap=16)
     saved_name = os.path.splitext(os.path.basename(img_path))[0]
-
-    img_np = img.squeeze().permute(1, 2, 0).cpu().numpy()
-    img_np = np.clip((img_np * 0.5 + 0.5) * 255, 0, 255).astype(np.uint8)
-    img_np = cv2.cvtColor(img_np, cv2.COLOR_BGR2RGB)
-    img_map = merge_images(img_np, c_map)
-    cv2.imwrite("./results/{0}.png".format(saved_name), img_map)
-    #print("File: {0} Score: {1}".format(saved_name, score))
+    if (save_data):
+        img_np = img.squeeze().permute(1, 2, 0).cpu().numpy()
+        img_np = np.clip((img_np * 0.5 + 0.5) * 255, 0, 255).astype(np.uint8)
+        img_np = cv2.cvtColor(img_np, cv2.COLOR_BGR2RGB)
+        img_map = merge_images(img_np, c_map)
+        cv2.imwrite("./results/{0}.png".format(saved_name), img_map)
+    else:
+        print("File: {0} Score: {1}".format(saved_name, score))
 
     # Save data to CSV
     with open(csv_path, 'a', newline='') as csvfile:
@@ -73,21 +74,23 @@ def main(config):
     discriminator = get_model()
     f_path = config.f_path
     csv_path = config.csv_path
+    save_data = config.save_data
 
     print("Start assessment..")
     if os.path.isfile(f_path):
-        evaluate_img(f_path, discriminator)
+        evaluate_img(f_path, discriminator, csv_path, save_data)
     else:
         files_list = os.walk(f_path).__next__()[2]
         for file_name in tqdm(files_list):
             file_path = os.path.join(f_path, file_name)
-            evaluate_img(file_path, discriminator, csv_path)
+            evaluate_img(file_path, discriminator, csv_path, save_data)
     print("Done!")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--f_path', type=str, default="./docs/toy", help='file path or folder path')
     parser.add_argument('--csv_path', type=str, default="./results/result.csv", help='csv results file name')
+    parser.add_argument('--save_data', type=str, default=False, help='boolean to save images and csv')
     config = parser.parse_args()
     print(config)
     main(config)
